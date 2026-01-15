@@ -1,0 +1,35 @@
+{
+  "name": "Caption Blocker",
+  "version": "1.0.0",
+  "description": "Block or blurr unnecessary captions and subtitles.",
+  "manifest_version": 3,
+  "host_permissions": ["<all_urls>"],
+  "permissions": [ "scripting", "webNavigation", "alarms", "activeTab", "storage", "tabs" ],
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["main.js", "thirdParty/jquery-3.7.1.min.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sbob.jpg", "vid.webm"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+  "default_icon": { "48": "icons/border-48.png" },
+  "default_title": "Caption Blocker",
+  "default_popup": "view.html"
+  },
+  "content_security_policy": {
+  "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}

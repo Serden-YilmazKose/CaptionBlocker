@@ -1,0 +1,31 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#popup-content {
+  width: 600px;
+}
+
+.item {
+  display: flex;
+  margin: 10px 0px;
+  align-items: center;
+}
+
+.item .bar {
+  width: 350px;
+  background-color: royalblue;
+  border-radius: 5px;
+  height: 30px;
+}
+
+.item .name {
+  width: 150px;
+  padding: 10px;
+}
+
+.item .time {
+  width: 100px;
+  padding: 10px;
+}
