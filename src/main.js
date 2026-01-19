@@ -31,8 +31,11 @@ window.addEventListener('fullscreenchange', go);
  */
 async function go() {
   if (data == null) {
-    let id = extractYouTubeID(window.location.href);
-    await makeGetRequest(id);
+    let video_id = extractYouTubeID(window.location.href);
+    if (video_id == null){
+      return;
+    }
+    await makeGetRequest(video_id);
   }
   drawRectangleFromAPI(data);
 }
@@ -44,8 +47,11 @@ async function go() {
  */
 function extractYouTubeID(videoURL) {
   // Source: https://www.geeksforgeeks.org/javascript/get-the-youtube-video-id-from-a-url-using-javascript/
-  let VID_REGEX =
-  /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  let VID_REGEX = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  if (videoURL.match(VID_REGEX) == null) {
+    console.error("YouTube video ID could not be found. Make sure you are on a valid YouTube video page.")
+    return null;
+  }
   return videoURL.match(VID_REGEX)[1];
 }
 
@@ -190,12 +196,12 @@ function drawRectangleUsingMouse() {
  * Make a POST request to send the rectangle along with the coordinates
  * @param {Element} canvas  element where rectangle is located 
  * @param {Element} ctx     rectangle element
- * @return {Int}    x       Location of the upper-left corner of the rectangle along x-axis
- * @return {Int}    y       Location of the upper-left corner of the rectangle along y-axis
+ * @return {Int}    x_cord  Location of the upper-left corner of the rectangle along x-axis
+ * @return {Int}    y_cord   Location of the upper-left corner of the rectangle along y-axis
  * @return {Int}    length  Length of the rectangle, in pixels
  * @return {Int}    height  height of the rectangle, in pixels
  */
-async function sendCapper(canvas, ctx, x, y, length, height) {
+async function sendCapper(canvas, ctx, x_cord, y_cord, length, height) {
   video = document.getElementsByClassName('video-stream html5-main-video')[0];
   rect = video.getBoundingClientRect();
   ctx.clearRect(0,0,canvas.width,canvas.height); 
@@ -205,7 +211,10 @@ async function sendCapper(canvas, ctx, x, y, length, height) {
   y_resolution = rect.height;
 
   var video_id = extractYouTubeID(window.location.href);
-  buildPostJson(video_id, x_cord, heigh, length, x_resolution, y_resolution);
+  if (video_id == null){
+    return;
+  }
+  var postJson = buildPostJson(video_id, x_cord, y_cord, height, length, x_resolution, y_resolution);
 
 // a POST request
   const response = await fetch(URL, {
@@ -217,11 +226,11 @@ async function sendCapper(canvas, ctx, x, y, length, height) {
   })
 }
 
-function buildPostJson(video_id, x_cord, heigh, length, x_resolution, y_resolution) {
+function buildPostJson(video_id, x_cord, y_cord, height, length, x_resolution, y_resolution) {
   var tmpJson = {};
   tmpJson.video_id = video_id;
-  tmpJson.x_cord = x;
-  tmpJson.y_cord = y;
+  tmpJson.x_cord = x_cord;
+  tmpJson.y_cord = y_cord;
   tmpJson.height = height;
   tmpJson.length = length;
   tmpJson.x_res = x_resolution;
@@ -230,11 +239,19 @@ function buildPostJson(video_id, x_cord, heigh, length, x_resolution, y_resoluti
 }
 
 async function analyzePage() {
-  drawRectangleUsingMouse();
+  console.log("Block function called, now in analyzePage");
+  go();
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "block") {
     sendResponse(analyzePage());
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "drawBlocker") {
+    console.log("BLOCKER REMOVER CALLED");
+    sendResponse(drawRectangleUsingMouse());
   }
 });
