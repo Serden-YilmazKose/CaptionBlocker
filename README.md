@@ -16,7 +16,8 @@ The following are the languages and tools used in the development of the project
 Since this project hasn't been deployed, you will have to run everything locally, including the server. The following are some steps to get that working.
 * Clone the repository by running:
 ```shell
-git clone https://github.com/Serden-YilmazKose/CaptionBlocker
+git clone https://github.com/Serden-YilmazKose/CaptionBlocker.git
+cd CaptionBlocker
 ```
 * Run the server: Navigate to where you cloned the project repository, and run `python3 server.py`.
 * Log into your MariaDB server, create a database labeled `caption_capper` (this will be changed later), and submit the following query:
