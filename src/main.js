@@ -1,3 +1,5 @@
+// TODO: Make the caption appear, if available, once the video starts. Currently, we wait for user input or for screen resize
+// TODO: Give variables proper names, instead of "x" and "submissionHeight"
 const URL = 'http://127.0.0.1:5000/videos';
 var response;
 var data;
@@ -25,6 +27,35 @@ var drawingWidth;
 window.addEventListener("load", go);
 window.addEventListener('resize', go);
 window.addEventListener('fullscreenchange', go);
+
+/**
+ * Source: https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
+ */
+
+function waitForElementToLoad(selector) {
+  return new Promise(resolve => {
+    if (document.querySelector(selector)) {
+        return resolve(document.querySelector(selector));
+    }
+    const observer = new MutationObserver(mutations => {
+      if (document.querySelector(selector)) {
+          observer.disconnect();
+          resolve(document.querySelector(selector));
+      }
+    });
+    // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
+}
+
+waitForElementToLoad('video-stream html5-main-video').then((elm) => {
+  console.log('Element is ready');
+  go();
+  console.log(elm.textContent);
+});
 
 /**
  * Fetch data if null, then call drawRectangleFromAPI
@@ -119,11 +150,35 @@ async function drawRectangleFromAPI(data) {
 }
 
 /**
+ * TODO: Merge removeCaptionBlocker and deleteCapper into ONE function
+ * Remove any existing caption blocker,
+ * Uses similar syntax of deleteCapper
+ */
+function removeCaptionBlocker() {
+  console.log("Removing caption blocker...");
+  body = document.getElementsByTagName("body")[0];
+  let removeCtx = document.getElementById("CursorLayer");
+  if (removeCtx == null) {
+    return;
+  }
+  body.removeChild(removeCtx);
+  ctx = null;
+  video = null;
+  rect = null;
+  tmpCanvas = null;
+  x = null;
+  y = null;
+  width = null;
+  height = null;
+}
+
+/**
+ * TODO: Merge removeCaptionBlocker and deleteCapper into ONE function
  * Clear rectangle, remove the canvas, and set variables to null
  */
 function deleteCapper() {
   if (ctx == null) { return; }
-  ctx.clearRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width, height); // Is this needed? Since the next line removed the canvas
   body.removeChild(tmpCanvas);
   video = null;
   rect = null;
@@ -251,7 +306,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "drawBlocker") {
-    console.log("BLOCKER REMOVER CALLED");
+    console.log("Draw caption blocker called");
     sendResponse(drawRectangleUsingMouse());
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "removeBlocker") {
+    console.log("Remover caption blocker called");
+    sendResponse(removeCaptionBlocker());
   }
 });
