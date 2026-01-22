@@ -6,7 +6,8 @@
   "host_permissions": ["<all_urls>"],
   "permissions": [ "scripting", "webNavigation", "alarms", "activeTab", "storage", "tabs" ],
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "icons/icons8-c-48.png",
+    "96": "icons/icons8-c-96.png"
   },
   "background": {
     "scripts": ["background.js"],
