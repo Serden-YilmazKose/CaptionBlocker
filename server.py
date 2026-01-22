@@ -1,7 +1,7 @@
+# TODO: Verify JSON queries in a more python way
+# TODO: Implement this: https://flask-verify.readthedocs.io/en/latest/tutorial/json_verify_tutorial.html
 """Flask API to make GET and POST requests to a MariaDB server"""
-
 import json
-# import mariadb
 import sys
 
 import mariadb
@@ -27,7 +27,6 @@ def get_block():
 def post_block():
     """Handle POST Requests"""
     if request.method == "POST":
-        # return insert(website, video_id, x_cord, y_cord, length, height, x_res, y_res)
         return insert(request)
     return "ERROR"
 
@@ -39,14 +38,19 @@ def insert(request_data):
     # --- Example: Select Data ---
     print("\nInserting data...")
 
-    website = "https://youtube.com"
-    video_id = request_data.json["video_id"]
-    x_cord = request_data.json["x_cord"]
-    y_cord = request_data.json["y_cord"]
-    length = request_data.json["length"]
-    height = request_data.json["height"]
-    x_res = request_data.json["x_res"]
-    y_res = request_data.json["y_res"]
+    # Check if the JSON has all components, catch KeyError
+    try:
+        website = "https://youtube.com"
+        video_id = request_data.json["video_id"]
+        x_cord = request_data.json["x_cord"]
+        y_cord = request_data.json["y_cord"]
+        length = request_data.json["length"]
+        height = request_data.json["height"]
+        x_res = request_data.json["x_res"]
+        y_res = request_data.json["y_res"]
+    except KeyError:
+        print("JSON request was improperly formatted.")
+        return "JSON request was improperly formatted.", 201
 
     insert_query = f"""INSERT INTO VIDEOS
     (website, video_id, x_cord, y_cord, length, height, x_res, y_res)
@@ -58,7 +62,7 @@ def insert(request_data):
     conn.commit()
 
     cursor.connection.close()
-    return "DONE"
+    return "DONE", 200
 
 
 def select(video_id):
@@ -81,7 +85,7 @@ def select(video_id):
     if r == []:
         return 400
     cursor.connection.close()
-    return json.dumps(r[0] if r else None)
+    return json.dumps(r[0] if r else None), 200
 
 
 def connect_to_mariadb():
@@ -103,18 +107,6 @@ def connect_to_mariadb():
     # Get Cursor
     cursor = conn.cursor()
     return conn, cursor
-
-
-# CREATE TABLE VIDEOS (
-#     website VARCHAR(50),
-#     video_id VARCHAR(50),
-#     x_cord INT,
-#     y_cord INT,
-#     length INT,
-#     height INT,
-#     x_res INT,
-#     y_res INT
-# );
 
 
 if __name__ == "__main__":
