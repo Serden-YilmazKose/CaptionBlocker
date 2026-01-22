@@ -26,7 +26,10 @@
     }
   ],
   "action": {
-  "default_icon": { "48": "icons/border-48.png" },
+  "default_icon": {
+    "48": "icons/icons8-c-48.png",
+    "96": "icons/icons8-c-96.png"
+  },
   "default_title": "Caption Blocker",
   "default_popup": "view.html"
   },
