@@ -44,3 +44,5 @@ The next steps will depend on what browser you are using. Currently, the extensi
 
 # Note
 As may be evident from the quality and structure of the code, not one line of this project was written by a generative artificial intelligence. Prior to this, I had nearly zero experience using JavaScript.
+
+Icons downloaded from [icons8](href="https://icons8.com/icon/Hph7fH3f5brw/c-cute).
