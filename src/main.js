@@ -1,28 +1,94 @@
 // TODO: Make the caption appear, if available, once the video starts. Currently, we wait for user input or for screen resize
-// TODO: Give variables proper names, instead of "x" and "submissionHeight"
+// TODO: Create class to hold all variables relating to a caption blocker
+  // TODO: Give variables proper names, instead of "x" and "submissionHeight"
 const URL = 'http://127.0.0.1:5000/videos';
-var response;
-var data;
-var body;
+// var response;
+// var data;
+// var body;
+var CB = null;
 
-var startX;
-var startY;
-var isDrawing;
+// var startX;
+// var startY;
+// var isDrawing;
 
-var video;
-var rect;
-var tmpCanvas;
-var x;
-var y;
-var ctx;
-var height;
-var width;
-var submissionsHeight;
-var submissionsWidth;
+// var video;
+// var rect;
+// var tmpCanvas;
+// var x;
+// var y;
+// var ctx;
+// var height;
+// var width;
 
-var drawingCtx;
-var drawingHeight;
-var drawingWidth;
+// var drawingCtx;
+// var drawingHeight;
+// var drawingWidth;
+
+class CaptionBlocker {
+  // constructor(x, y, height, width) {
+  //   this.x = x;
+  //   this.y = y;
+  //   this.height = height;
+  //   this.width = width;
+  // }
+
+  constructor() {
+    this.x      = null;
+    this.y      = null;
+    this.height = null;
+    this.width  = null;
+  }
+
+  ClearVars(context) {
+    if (context == null) { return; }
+    context.clearRect(0, 0, this.width, this.height); // Is this needed? Since the next line removed the canvas
+    // body.removeChild(tmpCanvas);
+    // video = null;
+    // rect = null;
+    // tmpCanvas = null;
+    this.x      = null;
+    this.y      = null;
+    this.width  = null;
+    this.height = null;
+  }
+
+  Draw(context) {
+    this.ClearVars();
+    let video = document.getElementsByClassName('video-stream html5-main-video')[0];
+    let rect = video.getBoundingClientRect();
+    let tmpCanvas = document.createElement('canvas');
+    this.SetVars(video, rect, tmpCanvas);
+
+    // Set offset using style:
+    // Source: https://www.reddit.com/r/learnjavascript/comments/uy3zvd/how_to_set_the_offset_of_an_element_with_vanilla/
+    // Source: https://www.javaspring.net/blog/how-to-set-the-offset-in-javascript/
+    tmpCanvas.id = "CursorLayer";
+    tmpCanvas.style.left = `${this.x}px`;
+    tmpCanvas.style.top = `${this.y}px`;
+    tmpCanvas.width = this.width;
+    tmpCanvas.height = this.height;
+    tmpCanvas.style.zIndex = 8; // Do we need this?
+    tmpCanvas.style.position = "absolute"; // Do we need this? 
+    // canvas.style.border = "1px solid"; // Do we need this? 
+
+    let body = document.getElementsByTagName("body")[0];
+    body.appendChild(tmpCanvas);
+
+    context = tmpCanvas.getContext("2d");
+    context.fillStyle = "rgba(0, 0, 0, 1)";
+    context.fillRect(0, 0, this.width, this.height);
+    return; 
+  }
+
+  SetVars(video, rect, tmpCanvas) {
+    let submissionsWidth  = data.x_res;
+    let submissionsHeight = data.y_res;
+    this.x = rect.left + (data.x_cord * rect.width  / submissionsWidth);
+    this.y = rect.top  + (data.y_cord * rect.height / submissionsHeight);
+    this.width  = data.length * rect.width  / submissionsWidth;
+    this.height = data.height * rect.height / submissionsHeight;
+  }
+}
 
 window.addEventListener("load", go);
 window.addEventListener('resize', go);
@@ -31,7 +97,6 @@ window.addEventListener('fullscreenchange', go);
 /**
  * Source: https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
  */
-
 function waitForElementToLoad(selector) {
   return new Promise(resolve => {
     if (document.querySelector(selector)) {
@@ -51,16 +116,18 @@ function waitForElementToLoad(selector) {
   });
 }
 
-waitForElementToLoad('video-stream html5-main-video').then((elm) => {
-  console.log('Element is ready');
-  go();
-  console.log(elm.textContent);
-});
+// waitForElementToLoad('video-stream html5-main-video').then((elm) => {
+//   console.log('Element is ready');
+//   go();
+//   console.log(elm.textContent);
+// });
 
 /**
+ * TODO: Make data global, or find similar solution, to avoid re-fetching it every time 
  * Fetch data if null, then call drawRectangleFromAPI
  */
 async function go() {
+  let data;
   if (data == null) {
     let video_id = extractYouTubeID(window.location.href);
     if (video_id == null){
@@ -91,14 +158,16 @@ function extractYouTubeID(videoURL) {
  * @param {String} YouTube video ID
  */
 async function makeGetRequest(video_id) {
-  try {
+  try
+  {
     // The parameter for fetch should be in this format:
     // http://127.0.0.1:5000/videos?video_id=video_id
     const response = await fetch(URL + "?video_id=" + video_id);
     if (!response.ok) { throw new Error(`Response status: ${response.status}`); }
-
     data = await response.json();
-  } catch (error) {
+  }
+  catch (error)
+  {
     console.error(error.message);
   }
 }
@@ -106,87 +175,67 @@ async function makeGetRequest(video_id) {
 /**
  * Adjust the width, heigh, and coordinates of the rectangle
  */
-function setVars() {
-  submissionsWidth = data.x_res;
-  submissionsHeight = data.y_res;
-  x = rect.left + (data.x_cord * rect.width / submissionsWidth);
-  y = rect.top + (data.y_cord * rect.height / submissionsHeight);
-  width = data.length * rect.width / submissionsWidth;
-  height = data.height * rect.height / submissionsHeight;
-}
+// function setVars() {
+//   let submissionsWidth = data.x_res;
+//   let submissionsHeight = data.y_res;
+//   x = rect.left + (data.x_cord * rect.width / submissionsWidth);
+//   y = rect.top + (data.y_cord * rect.height / submissionsHeight);
+//   width = data.length * rect.width / submissionsWidth;
+//   height = data.height * rect.height / submissionsHeight;
+// }
 
 /**
  * Draw the rectangle according to the data given as a response to the API fetch
  * @param {data} response from the GET request
  */
 async function drawRectangleFromAPI(data) {
-  deleteCapper();
-
-  video = document.getElementsByClassName('video-stream html5-main-video')[0];
+  let video = document.getElementsByClassName('video-stream html5-main-video')[0];
   rect = video.getBoundingClientRect();
-  tmpCanvas = document.createElement('canvas');
-
-  setVars();
+  let tmpCanvas = document.createElement('canvas');
+  
+  if (CB != null) { deleteCapper(); }
+  CB = new CaptionBlocker()
+  CB.SetVars(video, rect, tmpCanvas);
+  let ctx = tmpCanvas.getContext("2d");
+  CB.Draw(ctx);
+  // setVars();
 
   // Set offset using style:
   // Source: https://www.reddit.com/r/learnjavascript/comments/uy3zvd/how_to_set_the_offset_of_an_element_with_vanilla/
   // Source: https://www.javaspring.net/blog/how-to-set-the-offset-in-javascript/
-  tmpCanvas.id = "CursorLayer";
-  tmpCanvas.style.left = `${x}px`;
-  tmpCanvas.style.top = `${y}px`;
-  tmpCanvas.width = width;
-  tmpCanvas.height = height;
-  tmpCanvas.style.zIndex = 8; // Do we need this?
-  tmpCanvas.style.position = "absolute"; // Do we need this? 
+  // tmpCanvas.id = "CursorLayer";
+  // tmpCanvas.style.left = `${x}px`;
+  // tmpCanvas.style.top = `${y}px`;
+  // tmpCanvas.width = width;
+  // tmpCanvas.height = height;
+  // tmpCanvas.style.zIndex = 8; // Do we need this?
+  // tmpCanvas.style.position = "absolute"; // Do we need this? 
   // canvas.style.border = "1px solid"; // Do we need this? 
 
-  body = document.getElementsByTagName("body")[0];
-  body.appendChild(tmpCanvas);
+  // body = document.getElementsByTagName("body")[0];
+  // body.appendChild(tmpCanvas);
 
-  ctx = tmpCanvas.getContext("2d");
-  ctx.fillStyle = "rgba(0, 0, 0, 1)";
-  ctx.fillRect(0, 0, width, height);
+  // ctx = tmpCanvas.getContext("2d");
+  // ctx.fillStyle = "rgba(0, 0, 0, 1)";
+  // ctx.fillRect(0, 0, width, height);
   return; 
 }
 
 /**
- * TODO: Merge removeCaptionBlocker and deleteCapper into ONE function
- * Remove any existing caption blocker,
- * Uses similar syntax of deleteCapper
- */
-function removeCaptionBlocker() {
-  console.log("Removing caption blocker...");
-  body = document.getElementsByTagName("body")[0];
-  let removeCtx = document.getElementById("CursorLayer");
-  if (removeCtx == null) {
-    return;
-  }
-  body.removeChild(removeCtx);
-  ctx = null;
-  video = null;
-  rect = null;
-  tmpCanvas = null;
-  x = null;
-  y = null;
-  width = null;
-  height = null;
-}
-
-/**
- * TODO: Merge removeCaptionBlocker and deleteCapper into ONE function
  * Clear rectangle, remove the canvas, and set variables to null
  */
 function deleteCapper() {
-  if (ctx == null) { return; }
-  ctx.clearRect(0, 0, width, height); // Is this needed? Since the next line removed the canvas
-  body.removeChild(tmpCanvas);
-  video = null;
-  rect = null;
-  tmpCanvas = null;
-  x = null;
-  y = null;
-  width = null;
-  height = null;
+  console.log("Deleting caption blocker...");
+  // if (ctx == null) { return; }
+  // ctx.clearRect(0, 0, width, height); // Is this needed? Since the next line removed the canvas
+
+  let body = document.getElementsByTagName("body")[0];
+  let removeCtx = document.getElementById("CursorLayer");
+  while (removeCtx != null) {
+    body.removeChild(removeCtx);
+    removeCtx = document.getElementById("CursorLayer");
+  }
+  console.log("Caption blocker deleted...");
 }
 
 /**
@@ -195,7 +244,7 @@ function deleteCapper() {
 function drawRectangleUsingMouse() {
   // Draw rectangle using click and drag
   // Source: https://jsfiddle.net/eyaylagul/nho08juw/
-  video = document.getElementsByClassName('video-stream html5-main-video')[0];
+  let video = document.getElementsByClassName('video-stream html5-main-video')[0];
   rect = video.getBoundingClientRect();
   var canvas = document.createElement('canvas');
 
@@ -207,16 +256,17 @@ function drawRectangleUsingMouse() {
   canvas.style.zIndex = 8;
   canvas.style.position = "absolute";
 
-  body = document.getElementsByTagName("body")[0];
+  let body = document.getElementsByTagName("body")[0];
   body.appendChild(canvas);
+  let drawingCtx = canvas.getContext("2d");
 
-  drawingCtx = canvas.getContext("2d");
-
-  var canvasx = $(canvas).offset().left - window.pageXOffset;
-  var canvasy = $(canvas).offset().top - window.pageYOffset;
-  var last_mousex = last_mousey = 0;
-  var mousex = mousey = 0;
-  var mousedown = false;
+  let drawingHeight = null;
+  let drawingWidth  = null;
+  let canvasx = $(canvas).offset().left - window.pageXOffset;
+  let canvasy = $(canvas).offset().top - window.pageYOffset;
+  let last_mousex = last_mousey = 0;
+  let mousex = mousey = 0;
+  let mousedown = false;
 
   $(canvas).on('mousedown', function(e) {
     last_mousex = parseInt(e.clientX-canvasx);
@@ -257,9 +307,10 @@ function drawRectangleUsingMouse() {
  * @return {Int}    height  height of the rectangle, in pixels
  */
 async function sendCapper(canvas, ctx, x_cord, y_cord, length, height) {
-  video = document.getElementsByClassName('video-stream html5-main-video')[0];
+  let video = document.getElementsByClassName('video-stream html5-main-video')[0];
   rect = video.getBoundingClientRect();
   ctx.clearRect(0,0,canvas.width,canvas.height); 
+  let body = document.getElementsByTagName("body")[0];
   body.removeChild(canvas);
 
   x_resolution = rect.width;
@@ -314,6 +365,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "removeBlocker") {
     console.log("Remover caption blocker called");
-    sendResponse(removeCaptionBlocker());
+    sendResponse(deleteCapper());
   }
 });
