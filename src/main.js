@@ -1,16 +1,15 @@
 // TODO: Make the caption appear, if available, once the video starts. Currently, we wait for user input or for screen resize
 // TODO: Create class to hold all variables relating to a caption blocker
   // TODO: Give variables proper names, instead of "x" and "submissionHeight"
+// TODO: Send screenshot of video over to Python serve for auto caption detection (if possible)
 const URL = 'http://127.0.0.1:5000/videos';
+var CB = null;
 // var response;
 // var data;
 // var body;
-var CB = null;
-
 // var startX;
 // var startY;
 // var isDrawing;
-
 // var video;
 // var rect;
 // var tmpCanvas;
@@ -19,19 +18,11 @@ var CB = null;
 // var ctx;
 // var height;
 // var width;
-
 // var drawingCtx;
 // var drawingHeight;
 // var drawingWidth;
 
 class CaptionBlocker {
-  // constructor(x, y, height, width) {
-  //   this.x = x;
-  //   this.y = y;
-  //   this.height = height;
-  //   this.width = width;
-  // }
-
   constructor() {
     this.x      = null;
     this.y      = null;
@@ -42,10 +33,6 @@ class CaptionBlocker {
   ClearVars(context) {
     if (context == null) { return; }
     context.clearRect(0, 0, this.width, this.height); // Is this needed? Since the next line removed the canvas
-    // body.removeChild(tmpCanvas);
-    // video = null;
-    // rect = null;
-    // tmpCanvas = null;
     this.x      = null;
     this.y      = null;
     this.width  = null;
@@ -116,14 +103,7 @@ function waitForElementToLoad(selector) {
   });
 }
 
-// waitForElementToLoad('video-stream html5-main-video').then((elm) => {
-//   console.log('Element is ready');
-//   go();
-//   console.log(elm.textContent);
-// });
-
 /**
- * TODO: Make data global, or find similar solution, to avoid re-fetching it every time 
  * Fetch data if null, then call drawRectangleFromAPI
  */
 async function go() {
@@ -173,18 +153,6 @@ async function makeGetRequest(video_id) {
 }
 
 /**
- * Adjust the width, heigh, and coordinates of the rectangle
- */
-// function setVars() {
-//   let submissionsWidth = data.x_res;
-//   let submissionsHeight = data.y_res;
-//   x = rect.left + (data.x_cord * rect.width / submissionsWidth);
-//   y = rect.top + (data.y_cord * rect.height / submissionsHeight);
-//   width = data.length * rect.width / submissionsWidth;
-//   height = data.height * rect.height / submissionsHeight;
-// }
-
-/**
  * Draw the rectangle according to the data given as a response to the API fetch
  * @param {data} response from the GET request
  */
@@ -198,26 +166,6 @@ async function drawRectangleFromAPI(data) {
   CB.SetVars(video, rect, tmpCanvas);
   let ctx = tmpCanvas.getContext("2d");
   CB.Draw(ctx);
-  // setVars();
-
-  // Set offset using style:
-  // Source: https://www.reddit.com/r/learnjavascript/comments/uy3zvd/how_to_set_the_offset_of_an_element_with_vanilla/
-  // Source: https://www.javaspring.net/blog/how-to-set-the-offset-in-javascript/
-  // tmpCanvas.id = "CursorLayer";
-  // tmpCanvas.style.left = `${x}px`;
-  // tmpCanvas.style.top = `${y}px`;
-  // tmpCanvas.width = width;
-  // tmpCanvas.height = height;
-  // tmpCanvas.style.zIndex = 8; // Do we need this?
-  // tmpCanvas.style.position = "absolute"; // Do we need this? 
-  // canvas.style.border = "1px solid"; // Do we need this? 
-
-  // body = document.getElementsByTagName("body")[0];
-  // body.appendChild(tmpCanvas);
-
-  // ctx = tmpCanvas.getContext("2d");
-  // ctx.fillStyle = "rgba(0, 0, 0, 1)";
-  // ctx.fillRect(0, 0, width, height);
   return; 
 }
 
@@ -226,10 +174,8 @@ async function drawRectangleFromAPI(data) {
  */
 function deleteCapper() {
   console.log("Deleting caption blocker...");
-  // if (ctx == null) { return; }
-  // ctx.clearRect(0, 0, width, height); // Is this needed? Since the next line removed the canvas
-
   let body = document.getElementsByTagName("body")[0];
+  // Set context, and keep removeing child until none are left
   let removeCtx = document.getElementById("CursorLayer");
   while (removeCtx != null) {
     body.removeChild(removeCtx);
@@ -275,7 +221,7 @@ function drawRectangleUsingMouse() {
   });
 
   // TODO: Right now, we assume the user will be satisfied with the rectangle upon lifting the mouse
-  // This gives the user now chance to adjust or fix the rectangle
+  // This gives the user no chance to adjust or fix the rectangle
   $(canvas).on('mouseup', function(e) {
       mousedown = false;
       sendCapper(canvas, drawingCtx, last_mousex, last_mousey, drawingWidth, drawingHeight);
@@ -344,6 +290,50 @@ function buildPostJson(video_id, x_cord, y_cord, height, length, x_resolution, y
   return tmpJson;
 }
 
+function takeScreenshot(){
+    let video = document.getElementsByClassName('video-stream html5-main-video')[0];
+    let rect = video.getBoundingClientRect();
+    let can = document.createElement('canvas');
+
+    let x = rect.left;
+    let y = rect.top;
+    let width  = rect.width;
+    let height = rect.height;
+
+    can.id = "myCanvas";
+    can.style.left = `${x}px`;
+    can.style.top = `${y}px`;
+    can.width = width;
+    can.height = height;
+    can.style.zIndex = 8; 
+    can.style.position = "absolute"; 
+
+    let body = document.getElementsByTagName("body")[0];
+    body.appendChild(can);
+
+    const elementToCapture = document.getElementById("myCanvas");
+    html2canvas (elementToCapture, {
+      allowTaint: true,
+      useCORS: true,
+    }).then((canvas) => {
+      const downloadLink = document.createElement("a");
+      downloadLink.href = canvas.toDataURL("image/png");
+      downloadLink.download = "screenshot.png";
+      downloadLink.click();
+    });
+
+    // let screenshot = html2canvas(document.getElementById("myCanvas"));
+    // console.log(screenshot);
+    // html2canvas(can).then((canvas) => {
+      // const base64image = canvas.toDataURL("image/png");
+      // window.location.href = base64image;
+      // const downloadLink = document.createElement ("a");
+      // downloadLink.href = canvas.toDataURL("image/png");
+      // downloadLink.download = "screenshot.png";
+      // downloadLink.click();
+  // });
+}
+
 async function analyzePage() {
   console.log("Block function called, now in analyzePage");
   go();
@@ -366,5 +356,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "removeBlocker") {
     console.log("Remover caption blocker called");
     sendResponse(deleteCapper());
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "takeScreenshot") {
+    console.log("Take screenshot called");
+    sendResponse(takeScreenshot());
   }
 });
