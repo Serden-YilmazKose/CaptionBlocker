@@ -3,6 +3,44 @@ body {
   text-align: center;
 }
 
+button {
+  position: relative;
+  padding: 0.25rem 0.5 rem;
+  border: none;
+  color: black;
+  cursor: pointer;
+}
+
+button::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  background-image: repeating-linear-gradient(
+  -45deg, grey 0%, grey 5%, transparent 5%, transparent 10%
+  );
+  background-size: 15px, 15px;
+  z-index: -1;
+}
+
+button:hover::before {
+  background-image: repeating-linear-gradient(
+  -45deg, red 0%, red 5%, transparent 5%, transparent 10%
+  );
+  animation: animate 2s infinite linear;
+}
+
+@keyframes animate {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 45% 45%;
+  }
+}
+
 #popup-content {
   width: 600px;
 }
