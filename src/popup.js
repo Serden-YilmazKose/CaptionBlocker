@@ -36,3 +36,10 @@ document.getElementById("removeBlocker").addEventListener("click", async () => {
   chrome.tabs.sendMessage(tab.id, { action: "removeBlocker" }, (response) => {
   });
 });
+
+document.getElementById("takeScreenshot").addEventListener("click", async () => {
+  // TODO: Remove the following line, if possible
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  chrome.tabs.sendMessage(tab.id, { action: "takeScreenshot" }, (response) => {
+  });
+});
