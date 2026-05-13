@@ -1,12 +1,17 @@
 # TODO: Verify JSON queries in a more python way
-# TODO: Implement this: https://flask-verify.readthedocs.io/en/latest/tutorial/json_verify_tutorial.html
+# TODO: Implement this:
+# https://flask-verify.readthedocs.io/en/latest/tutorial/json_verify_tutorial.html
 """Flask API to make GET and POST requests to a MariaDB server"""
+import base64
 import json
 import sys
+import uuid
+from io import BytesIO
 
 import mariadb
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
+from PIL import Image
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -27,11 +32,60 @@ def get_block():
 def post_block():
     """Handle POST Requests"""
     if request.method == "POST":
-        return insert(request)
+        if "data" in request.json.keys():
+            save_image(request)
+        else:
+            return insert(request)
     return "ERROR"
 
 
-# def insert(*, website, video_id, x_cord, y_cord, length, height, x_res, y_res):
+def base64_to_image(base64_string):
+    """ Convert base64 from API POST request to (image) bytes, then return """
+    # Source: https://codebeautify.org/blog/how-to-convert-base64-to-image-using-python/
+    # Remove the data URI prefix if present
+    if "data:image" in base64_string:
+        base64_string = base64_string.split(",")[1]
+
+    # Decode the Base64 string into bytes
+    image_bytes = base64.b64decode(base64_string)
+    return image_bytes
+
+
+def create_image_from_bytes(image_bytes):
+    """ Convert (image) bytes to an image, then return """
+    # Source: https://codebeautify.org/blog/how-to-convert-base64-to-image-using-python/
+    # Create a BytesIO object to handle the image data
+    image_stream = BytesIO(image_bytes)
+
+    # Open the image using Pillow (PIL)
+    image = Image.open(image_stream)
+    return image
+
+
+def save_image(req_data):
+    """ Save image from POST request to a file """
+    # Source: https://codebeautify.org/blog/how-to-convert-base64-to-image-using-python/
+    print("Saving request...")
+    # Replace this with your Base64 string
+    base64_string = req_data.json["data"]
+
+    # Convert Base64 to image bytes
+    image_bytes = base64_to_image(base64_string)
+
+    # Create an image from bytes
+    img = create_image_from_bytes(image_bytes)
+
+    # Display or save the image as needed
+    # Generate uuid for file name
+    file_dir = "./img"
+    file_name = str(uuid.uuid4())
+    file_extension = "jpg"
+    file = f"{file_dir}/{file_name}.{file_extension}"
+    img.show()
+    img.save(file)
+    print("Request saved...")
+
+
 def insert(request_data):
     """Insert data using SQL query to MariaDB server"""
     conn, cursor = connect_to_mariadb()
