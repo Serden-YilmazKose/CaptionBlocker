@@ -1,26 +1,14 @@
-// TODO: Make the caption appear, if available, once the video starts. Currently, we wait for user input or for screen resize
-// TODO: Create class to hold all variables relating to a caption blocker
-  // TODO: Give variables proper names, instead of "x" and "submissionHeight"
-// TODO: Send screenshot of video over to Python serve for auto caption detection (if possible)
+// TODO: Make the caption appear, if available, once the video starts. Currently, we wait for user input or for screen resize.
+// TODO: Create class to hold all variables relating to a caption blocker.
+  // TODO: Give variables proper names, instead of "x" and "submissionHeight".
+// TODO: Send screenshot of video over to Python server for auto caption detection (if possible).
+// TODO: Store data somewhere in global, or in the CaptionBlocker class, to avoid reloading it on resize.
+window.addEventListener("load", go);
+window.addEventListener('resize', go);
+window.addEventListener('fullscreenchange', go);
+
 const URL = 'http://127.0.0.1:5000/videos';
 var CB = null;
-// var response;
-// var data;
-// var body;
-// var startX;
-// var startY;
-// var isDrawing;
-// var video;
-// var rect;
-// var tmpCanvas;
-// var x;
-// var y;
-// var ctx;
-// var height;
-// var width;
-// var drawingCtx;
-// var drawingHeight;
-// var drawingWidth;
 
 class CaptionBlocker {
   constructor() {
@@ -77,11 +65,8 @@ class CaptionBlocker {
   }
 }
 
-window.addEventListener("load", go);
-window.addEventListener('resize', go);
-window.addEventListener('fullscreenchange', go);
-
 /**
+ * TODO: Remove if this is not needed. It is not called anywhere.
  * Source: https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
  */
 function waitForElementToLoad(selector) {
@@ -175,7 +160,7 @@ async function drawRectangleFromAPI(data) {
 function deleteCapper() {
   console.log("Deleting caption blocker...");
   let body = document.getElementsByTagName("body")[0];
-  // Set context, and keep removeing child until none are left
+  // Set context, and keep removing child until none are left
   let removeCtx = document.getElementById("CursorLayer");
   while (removeCtx != null) {
     body.removeChild(removeCtx);
@@ -311,27 +296,30 @@ function takeScreenshot(){
     let body = document.getElementsByTagName("body")[0];
     body.appendChild(can);
 
-    const elementToCapture = document.getElementById("myCanvas");
-    html2canvas (elementToCapture, {
-      allowTaint: true,
-      useCORS: true,
-    }).then((canvas) => {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = canvas.toDataURL("image/png");
-      downloadLink.download = "screenshot.png";
-      downloadLink.click();
-    });
+    //draw image to canvas. scale to target dimensions
+    let ctx = can.getContext("2d");
+    ctx.drawImage(video, 0, 0, can.width, can.height);
 
-    // let screenshot = html2canvas(document.getElementById("myCanvas"));
-    // console.log(screenshot);
-    // html2canvas(can).then((canvas) => {
-      // const base64image = canvas.toDataURL("image/png");
-      // window.location.href = base64image;
-      // const downloadLink = document.createElement ("a");
-      // downloadLink.href = canvas.toDataURL("image/png");
-      // downloadLink.download = "screenshot.png";
-      // downloadLink.click();
-  // });
+    //convert to desired file format
+    let dataURI = can.toDataURL('image/jpeg'); // can also use 'image/png'
+    makePostRequest(dataURI);
+    let removeCtx = document.getElementById("myCanvas");
+    while (removeCtx != null) {
+      body.removeChild(removeCtx);
+      removeCtx = document.getElementById("myCanvas");
+    }
+}
+
+async function makePostRequest(data){
+  let dataJSON = {};
+  dataJSON.data = data;
+  const response = await fetch(URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify(dataJSON)
+  })
 }
 
 async function analyzePage() {
