@@ -8,9 +8,7 @@ Hard-coded captions and subtitles, when not needed, can decrease the viewing exp
 The location and dimensions of the caption blocker are submitted by users. It would simply be too expensive to run code to find the location of the captions.
 
 The following are the languages and tools used in the development of the project:
-* JavaScript: Used to write the source code of the extension.
-* Python: Used to build a server, using Flask, that handles GET and POST requests.
-* MariaDB: Used to host the database of videos, insertions are made from the Python Flask server.
+* JavaScript: Used to write the source code of the extension. Python: Used to build a server, using Flask, that handles GET and POST requests. MariaDB: Used to host the database of videos, insertions are made from the Python Flask server.
 
 # Installation
 Since this project hasn't been deployed, you will have to run everything locally, including the server. The following are some steps to get that working.
@@ -36,7 +34,7 @@ cd CaptionBlocker
 
 The next steps will depend on what browser you are using. Currently, the extension only works on Firefox.
 ## Firefox
-* Visit the [Firefox debugging page]("about:debugging#/runtime/this-firefox").
+* Visit the [Firefox debugging page](about:debugging#/runtime/this-firefox).
 * Click on `Load Temporary Add-on`
 * Navigate to the directory you cloned the project repository.
 * Finally, open `manifest.json`, which is located in `src/`.
