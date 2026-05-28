@@ -1,14 +1,16 @@
-# CaptionBlocker
+# CaptionBlocker [![CaptionBlocker](https://github.com/Serden-YilmazKose/CaptionBlocker/blob/main/src/icons/icons8-c-96.png)](https://github.com/Serden-YilmazKose/CaptionBlocker)
 **Block or blur unnecessary captions and subtitles.**
 
 # Purpose
 Hard-coded captions and subtitles, when not needed, can decrease the viewing experience. This extension seeks to mitigate that problem by placing a black rectangle over the captions.
 
 # Tools
-The location and dimensions of the caption blocker are submitted by users. It would simply be too expensive to run code to find the location of the captions.
+The location and dimensions of the caption blocker are submitted by users, or detected automatically using server-side magic.
 
 The following are the languages and tools used in the development of the project:
-* JavaScript: Used to write the source code of the extension. Python: Used to build a server, using Flask, that handles GET and POST requests. MariaDB: Used to host the database of videos, insertions are made from the Python Flask server.
+* JavaScript: Used to write the source code of the extension.
+* Python: Used to build a server, using Flask, that handles GET and POST requests.
+* MariaDB: Used to host the database of videos, insertions are made from the Python Flask server.
 
 # Installation
 Since this project hasn't been deployed, you will have to run everything locally, including the server. The following are some steps to get that working.
@@ -17,8 +19,24 @@ Since this project hasn't been deployed, you will have to run everything locally
 git clone https://github.com/Serden-YilmazKose/CaptionBlocker.git
 cd CaptionBlocker
 ```
-* Run the server: Navigate to where you cloned the project repository, and run `python3 server.py`.
-* Log into your MariaDB server, create a database labeled `caption_capper` (this will be changed later), and submit the following query:
+* Install all Python dependencies:
+```shell
+pip install -r requirements.txt
+```
+* Run the server: Navigate to where you cloned the project repository, and run:
+```shell
+python3 server.py
+```
+* Log into your MariaDB server, the user and password must be root and pass, respectively:
+```shell
+mariadb -u root -p
+Enter password: root
+```
+* Once logged into your MariaDB server, create a database labeled `caption_capper` (this will be changed later):
+```shell
+CREATE DATABASE caption_capper;
+```
+Finally, submit the following query:
 ```SQL
  CREATE TABLE VIDEOS (
      website VARCHAR(50),
