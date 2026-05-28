@@ -72,6 +72,7 @@ button::before {
   );
   background-size: 15px, 15px;
   z-index: -1;
+  border-radius: inherit;
 }
 
 button:hover::before {
