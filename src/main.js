@@ -302,7 +302,10 @@ function takeScreenshot(){
 
     //convert to desired file format
     let dataURI = can.toDataURL('image/jpeg'); // can also use 'image/png'
-    makePostRequest(dataURI);
+    var video_id = extractYouTubeID(window.location.href);
+    if (video_id == null){ return; }
+    makePostRequest(video_id, dataURI);
+
     let removeCtx = document.getElementById("myCanvas");
     while (removeCtx != null) {
       body.removeChild(removeCtx);
@@ -310,8 +313,9 @@ function takeScreenshot(){
     }
 }
 
-async function makePostRequest(data){
+async function makePostRequest(video_id, data){
   let dataJSON = {};
+  dataJSON.video_id = video_id;
   dataJSON.data = data;
   const response = await fetch(URL, {
     method: 'POST',
