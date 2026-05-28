@@ -35,6 +35,7 @@ cd CaptionBlocker
 The next steps will depend on what browser you are using. Currently, the extension only works on Firefox.
 ## Firefox
 * Visit the [Firefox debugging page](about:debugging#/runtime/this-firefox).
+* Visit the <a href="about:debugging#/runtime/this-firefox">Firefox debugging page</a>.
 * Click on `Load Temporary Add-on`
 * Navigate to the directory you cloned the project repository.
 * Finally, open `manifest.json`, which is located in `src/`.
