@@ -1,13 +1,38 @@
 body {
   font-family: "Times New Roman";
   text-align: center;
+  padding: 0.5rem 0.3rem;
+
+  --bg: white;
+  --text: black;
+  --button-bg: #f0f0f0;
+  --button-text: black;
+
+  --accent: #FE273F;
+
+  background: var(--bg);
+  color: var(--text);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+
+hr {
+  width: 100%;
+  opacity: 0.5;
+}
+
+.blockButton {
+  padding: 1rem 0.5rem;
 }
 
 button {
   position: relative;
-  padding: 0.25rem 0.5 rem;
+  padding: 0.3rem 0.5rem;
   border: none;
-  color: black;
+  border-radius: 5px;
   cursor: pointer;
 }
 
