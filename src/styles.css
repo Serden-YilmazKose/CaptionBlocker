@@ -14,6 +14,14 @@ body {
   color: var(--text);
 }
 
+@media (prefers-color-scheme: dark) {
+  body {
+    --bg: #1f2028;
+    --text: #F3F3F3;
+    --button-bg: #1d2026;
+    --button-text: #F3F3F3;
+  }
+
 .buttons {
   display: flex;
   flex-direction: column;
