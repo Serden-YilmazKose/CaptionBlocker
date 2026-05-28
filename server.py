@@ -62,6 +62,54 @@ def create_image_from_bytes(image_bytes):
     return image
 
 
+def detect_captions(file_name):
+    """ Detect area of image with captions """
+    # Source: https://stackoverflow.com/questions/37771263/detect-text-area-in-an-image-using-python-and-opencv
+    import cv2
+
+    # Load image, grayscale, Gaussian blur, adaptive threshold
+    print(file_name)
+    image = cv2.imread(file_name)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (9, 9), 0)
+    thresh = cv2.adaptiveThreshold(
+        blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 30)
+
+    # Dilate to combine adjacent text contours
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    dilate = cv2.dilate(thresh, kernel, iterations=4)
+
+    # Find contours, highlight text areas, and extract ROIs
+    cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    ROI_number = 0
+    iH, iW, c = image.shape
+    for c in cnts:
+        area = cv2.contourArea(c)
+        if area > 10000:
+            x, y, w, h = cv2.boundingRect(c)
+            if (y > iH / 2):
+                print("Image info: ")
+                print(f"iW: {iW}")
+                print(f"iH: {iH}")
+                print("Rectangle info:")
+                print(f"x: {x}")
+                print(f"y: {y}")
+                print(f"w: {w}")
+                print(f"h: {h}")
+                return iW, iH, x, y, w, h
+            # cv2.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 3)
+            # ROI = image[y:y+h, x:x+w]
+            # cv2.imwrite('ROI_{}.png'.format(ROI_number), ROI)
+            # ROI_number += 1
+    return [iW, iH, 0, 0, 0, 0]
+    # cv2.imshow('thresh', thresh)
+    # cv2.imshow('dilate', dilate)
+    # cv2.imshow('image', image)
+    # cv2.waitKey()
+
+
 def save_image(req_data):
     """ Save image from POST request to a file """
     # Source: https://codebeautify.org/blog/how-to-convert-base64-to-image-using-python/
@@ -81,8 +129,21 @@ def save_image(req_data):
     file_name = str(uuid.uuid4())
     file_extension = "jpg"
     file = f"{file_dir}/{file_name}.{file_extension}"
-    img.show()
+    # img.show()  # Optional
     img.save(file)
+
+    # Insert data
+    video_id = req_data.json["video_id"]
+    x_res, y_res, x_cord, y_cord, length, height = detect_captions(file)
+    if (length == 0 or height == 0):
+        print("No caption found in screenshot")
+        return 201
+    screenshot_dict = {"video_id": video_id, "x_res": x_res, "y_res": y_res, "x_cord": x_cord,
+                       "y_cord": y_cord, "length": length, "height": height}
+    # screenshot_json = json.dumps(screenshot_dict)
+    # Convert JSON formatted str into JSON type (to avoid type error)
+    # screenshot_json = json.loads(str(screenshot_dict))
+    insert(screenshot_dict)
     print("Request saved...")
 
 
@@ -95,13 +156,22 @@ def insert(request_data):
     # Check if the JSON has all components, catch KeyError
     try:
         website = "https://youtube.com"
-        video_id = request_data.json["video_id"]
-        x_cord = request_data.json["x_cord"]
-        y_cord = request_data.json["y_cord"]
-        length = request_data.json["length"]
-        height = request_data.json["height"]
-        x_res = request_data.json["x_res"]
-        y_res = request_data.json["y_res"]
+        if type(request_data) is dict:
+            video_id = request_data["video_id"]
+            x_cord = request_data["x_cord"]
+            y_cord = request_data["y_cord"]
+            length = request_data["length"]
+            height = request_data["height"]
+            x_res = request_data["x_res"]
+            y_res = request_data["y_res"]
+        else:
+            video_id = request_data.json["video_id"]
+            x_cord = request_data.json["x_cord"]
+            y_cord = request_data.json["y_cord"]
+            length = request_data.json["length"]
+            height = request_data.json["height"]
+            x_res = request_data.json["x_res"]
+            y_res = request_data.json["y_res"]
     except KeyError:
         print("JSON request was improperly formatted.")
         return "JSON request was improperly formatted.", 201
@@ -139,7 +209,9 @@ def select(video_id):
     if r == []:
         return 400
     cursor.connection.close()
-    return json.dumps(r[0] if r else None), 200
+    # return json.dumps(r[0] if r else None), 200
+    # Return last row, by using -1
+    return json.dumps(r[-1] if r else None), 200
 
 
 def connect_to_mariadb():
