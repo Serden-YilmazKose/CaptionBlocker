@@ -22,6 +22,18 @@ body {
     --button-text: #F3F3F3;
   }
 
+.title {
+  margin-top: 0 !important;
+  font-size: large !important;
+  font-family: "Arial Black", Helvetica, sans-serif !important;
+  font-weight: 900 !important;
+  font-stretch: condensed !important;
+  opacity: 0.8;
+
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
 .buttons {
   display: flex;
   flex-direction: column;
@@ -42,6 +54,10 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  background: var(--button-bg);
+  color: var(--text);
+  font-size: 0.8rem;
+  margin: 0.35rem 0rem;
 }
 
 button::before {
@@ -60,7 +76,7 @@ button::before {
 
 button:hover::before {
   background-image: repeating-linear-gradient(
-  -45deg, red 0%, red 5%, transparent 5%, transparent 10%
+  -45deg, var(--accent) 0%, var(--accent) 5%, transparent 5%, transparent 10%
   );
   animation: animate 2s infinite linear;
 }
