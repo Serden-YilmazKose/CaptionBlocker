@@ -1,5 +1,5 @@
 # CaptionBlocker
-**Block or blurr unnecessary captions and subtitles.**
+**Block or blur unnecessary captions and subtitles.**
 
 # Purpose
 Hard-coded captions and subtitles, when not needed, can decrease the viewing experience. This extension seeks to mitigate that problem by placing a black rectangle over the captions.
