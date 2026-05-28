@@ -3,10 +3,11 @@ body {
   text-align: center;
   padding: 0.5rem 0.3rem;
 
-  --bg: white;
-  --text: black;
-  --button-bg: #f0f0f0;
-  --button-text: black;
+  --bg: #f7f7f7;
+  --text: #1f2028;
+  --button-bg: #f7f7f7;
+  --button-text: #1f2028;
+  --button-border: lightgray;
 
   --accent: #FE273F;
 
@@ -20,6 +21,7 @@ body {
     --text: #F3F3F3;
     --button-bg: #1d2026;
     --button-text: #F3F3F3;
+    --button-border: gray;
   }
 }
 
@@ -29,7 +31,6 @@ body {
   font-family: "Arial Black", Helvetica, sans-serif !important;
   font-weight: 900 !important;
   font-stretch: condensed !important;
-  opacity: 0.8;
 
   text-decoration: underline;
   text-decoration-color: var(--accent);
@@ -42,6 +43,7 @@ body {
 
 hr {
   width: 100%;
+  color: var(--button-border);
   opacity: 0.5;
 }
 
@@ -68,7 +70,7 @@ button::before {
   top: -2px;
   width: calc(100% + 4px);
   height: calc(100% + 4px);
-  background-color: grey;
+  background-color: var(--button-border);
   background-size: 15px, 15px;
   z-index: -1;
   border-radius: inherit;
