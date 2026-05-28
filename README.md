@@ -1,4 +1,4 @@
-# CaptionBlocker [![CaptionBlocker](https://github.com/Serden-YilmazKose/CaptionBlocker/blob/main/src/icons/icons8-c-96.png)](https://github.com/Serden-YilmazKose/CaptionBlocker)
+# CaptionBlocker [![CaptionBlocker](https://github.com/Serden-YilmazKose/CaptionBlocker/blob/main/src/icons/icons8-c-48.png)](https://github.com/Serden-YilmazKose/CaptionBlocker)
 **Block or blur unnecessary captions and subtitles.**
 
 # Purpose
