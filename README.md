@@ -36,7 +36,7 @@ cd CaptionBlocker
 
 The next steps will depend on what browser you are using. Currently, the extension only works on Firefox.
 ## Firefox
-* Visit the [Firefox debugging page](about:debugging#/runtime/this-firefox).
+* Visit the [Firefox debugging page]("about:debugging#/runtime/this-firefox").
 * Click on `Load Temporary Add-on`
 * Navigate to the directory you cloned the project repository.
 * Finally, open `manifest.json`, which is located in `src/`.
@@ -45,4 +45,4 @@ The next steps will depend on what browser you are using. Currently, the extensi
 # Note
 As may be evident from the quality and structure of the code, not one line of this project was written by a generative artificial intelligence. Prior to this, I had nearly zero experience using JavaScript.
 
-Icons downloaded from [icons8](href="https://icons8.com/icon/Hph7fH3f5brw/c-cute).
+Icons downloaded from [icons8]("https://icons8.com/icon/Hph7fH3f5brw/c-cute").
