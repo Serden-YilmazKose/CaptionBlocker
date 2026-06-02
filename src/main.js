@@ -11,12 +11,20 @@ window.navigation.addEventListener('navigate', reset);
 const URL = 'http://127.0.0.1:5000/videos';
 var CB = null;
 
+// TODO: Add member variables for video height and width
 class CaptionBlocker {
   constructor() {
     this.x      = null;
     this.y      = null;
     this.height = null;
     this.width  = null;
+  }
+
+  Print() {
+    console.log("x: ", this.x);
+    console.log("y: ", this.y);
+    console.log("width: ", this.width);
+    console.log("height: ", this.height);
   }
 
   ClearVars(context) {
@@ -29,11 +37,12 @@ class CaptionBlocker {
   }
 
   Draw(context) {
-    this.ClearVars();
+    console.log("Drawing...");
+    this.Print();
+    // this.ClearVars();
     let video = document.getElementsByClassName('video-stream html5-main-video')[0];
     let rect = video.getBoundingClientRect();
     let tmpCanvas = document.createElement('canvas');
-    // this.SetVars(rect);
 
     // Set offset using style:
     // Source: https://www.reddit.com/r/learnjavascript/comments/uy3zvd/how_to_set_the_offset_of_an_element_with_vanilla/
@@ -56,7 +65,7 @@ class CaptionBlocker {
     return; 
   }
 
-  SetVars(rect) {
+  SetVars(data, rect) {
     console.log("SetVars called...");
     let submissionsWidth  = data.x_res;
     let submissionsHeight = data.y_res;
@@ -96,13 +105,9 @@ function waitForElementToLoad(selector) {
  */
 async function go() {
   let data = null;
-  // if (data == null) {
   if (CB == null) {
     let video_id = extractYouTubeID(window.location.href);
-    if (video_id == null){
-      return;
-    }
-    // await makeGetRequest(video_id);
+    if (video_id == null){ return; }
     data = await makeGetRequest(video_id);
   }
   drawRectangleFromAPI(data);
@@ -138,12 +143,14 @@ function extractYouTubeID(videoURL) {
  * @param {String} YouTube video ID
  */
 async function makeGetRequest(video_id) {
-  tmpData = null;
+  let tmpData = null;
+  let resposne = null;
   try
   {
     // The parameter for fetch should be in this format:
     // http://127.0.0.1:5000/videos?video_id=video_id
-    const response = await fetch(URL + "?video_id=" + video_id);
+    // const response = await fetch(URL + "?video_id=" + video_id);
+    response = await fetch(URL + "?video_id=" + video_id);
     if (!response.ok) { throw new Error(`Response status: ${response.status}`); }
     data = await response.json();
     tmpData = data;
@@ -151,7 +158,12 @@ async function makeGetRequest(video_id) {
   catch (error)
   {
     console.error(error.message);
+    return null;
   }
+  
+  console.log("response: ", response);
+  console.log("tmpData: ", tmpData);
+  if (response == null || response.status != 200) { return null; }
   return tmpData;
 }
 
@@ -166,7 +178,10 @@ async function drawRectangleFromAPI(data) {
   
   if (CB != null) { deleteCapper(); }
   CB = new CaptionBlocker()
-  CB.SetVars(rect);
+  if (data != null) {
+    CB.SetVars(data, rect);
+  }
+  CB.SetVars(data, rect);
   let ctx = tmpCanvas.getContext("2d");
   CB.Draw(ctx);
   return; 
@@ -177,6 +192,7 @@ async function drawRectangleFromAPI(data) {
  */
 function deleteCapper() {
   console.log("Deleting caption blocker...");
+  CB = null;
   let body = document.getElementsByTagName("body")[0];
   // Set context, and keep removing child until none are left
   let removeCtx = document.getElementById("CursorLayer");
@@ -322,7 +338,8 @@ function takeScreenshot(){
     let dataURI = can.toDataURL('image/jpeg'); // can also use 'image/png'
     var video_id = extractYouTubeID(window.location.href);
     if (video_id == null){ return; }
-    makePostRequest(video_id, dataURI);
+    let success = makePostRequest(video_id, dataURI);
+    if (success) { go(); }
 
     let removeCtx = document.getElementById("myCanvas");
     while (removeCtx != null) {
@@ -342,6 +359,12 @@ async function makePostRequest(video_id, data){
     },
     body: JSON.stringify(dataJSON)
   })
+
+  if (response.status == 200) {
+    console.log("Success");
+    return true;
+  }
+  return false;
 }
 
 async function analyzePage() {
