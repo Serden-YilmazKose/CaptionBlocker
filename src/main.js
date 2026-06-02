@@ -6,6 +6,7 @@
 window.addEventListener("load", go);
 window.addEventListener('resize', go);
 window.addEventListener('fullscreenchange', go);
+window.navigation.addEventListener('navigate', reset);
 
 const URL = 'http://127.0.0.1:5000/videos';
 var CB = null;
@@ -32,7 +33,7 @@ class CaptionBlocker {
     let video = document.getElementsByClassName('video-stream html5-main-video')[0];
     let rect = video.getBoundingClientRect();
     let tmpCanvas = document.createElement('canvas');
-    this.SetVars(video, rect, tmpCanvas);
+    // this.SetVars(rect);
 
     // Set offset using style:
     // Source: https://www.reddit.com/r/learnjavascript/comments/uy3zvd/how_to_set_the_offset_of_an_element_with_vanilla/
@@ -55,13 +56,15 @@ class CaptionBlocker {
     return; 
   }
 
-  SetVars(video, rect, tmpCanvas) {
+  SetVars(rect) {
+    console.log("SetVars called...");
     let submissionsWidth  = data.x_res;
     let submissionsHeight = data.y_res;
     this.x = rect.left + (data.x_cord * rect.width  / submissionsWidth);
     this.y = rect.top  + (data.y_cord * rect.height / submissionsHeight);
     this.width  = data.length * rect.width  / submissionsWidth;
     this.height = data.height * rect.height / submissionsHeight;
+    console.log("SetVars done!");
   }
 }
 
@@ -92,15 +95,27 @@ function waitForElementToLoad(selector) {
  * Fetch data if null, then call drawRectangleFromAPI
  */
 async function go() {
-  let data;
-  if (data == null) {
+  let data = null;
+  // if (data == null) {
+  if (CB == null) {
     let video_id = extractYouTubeID(window.location.href);
     if (video_id == null){
       return;
     }
-    await makeGetRequest(video_id);
+    // await makeGetRequest(video_id);
+    data = await makeGetRequest(video_id);
   }
   drawRectangleFromAPI(data);
+}
+
+/**
+ * Fetch data if null, then call drawRectangleFromAPI
+ */
+function reset() {
+  console.log("Resetting...");
+  CB = null;
+  deleteCapper();
+  console.log("Reset!");
 }
 
 /**
@@ -123,6 +138,7 @@ function extractYouTubeID(videoURL) {
  * @param {String} YouTube video ID
  */
 async function makeGetRequest(video_id) {
+  tmpData = null;
   try
   {
     // The parameter for fetch should be in this format:
@@ -130,11 +146,13 @@ async function makeGetRequest(video_id) {
     const response = await fetch(URL + "?video_id=" + video_id);
     if (!response.ok) { throw new Error(`Response status: ${response.status}`); }
     data = await response.json();
+    tmpData = data;
   }
   catch (error)
   {
     console.error(error.message);
   }
+  return tmpData;
 }
 
 /**
@@ -148,7 +166,7 @@ async function drawRectangleFromAPI(data) {
   
   if (CB != null) { deleteCapper(); }
   CB = new CaptionBlocker()
-  CB.SetVars(video, rect, tmpCanvas);
+  CB.SetVars(rect);
   let ctx = tmpCanvas.getContext("2d");
   CB.Draw(ctx);
   return; 
